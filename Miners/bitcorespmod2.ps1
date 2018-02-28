@@ -6,7 +6,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Algorithms = [PSCustomObject]@{
     
-    Bitcore = 'bitcore'
+    #Bitcore = 'bitcore'
 
     
 }
