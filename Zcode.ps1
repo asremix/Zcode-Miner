@@ -14,7 +14,7 @@
     [Parameter(Mandatory=$false)]
     [Int]$Interval = 90, #seconds before reading hash rate from miners
     [Parameter(Mandatory=$false)] 
-    [Int]$StatsInterval = 1, #seconds of current active to gather hashrate if not gathered yet 
+    [Int]$StatsInterval = $null, #seconds of current active to gather hashrate if not gathered yet 
     [Parameter(Mandatory=$false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory=$false)]
@@ -45,6 +45,7 @@
     [Int]$Delay = 1 #seconds before opening each miner
 )
 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 Get-ChildItem . -Recurse | Unblock-File
@@ -63,6 +64,14 @@ $ActiveMinerPrograms = @()
 
 #Start the log
 Start-Transcript ".\Logs\$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
+#Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
+(Get-Process -Id $PID).PriorityClass = "BelowNormal"
+
+if (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) {Get-ChildItem . -Recurse | Unblock-File}
+if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpComputerStatus -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {
+    Start-Process (@{desktop = "powershell"; core = "pwsh"}.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+}
+
         Write-Host ""
         Write-Host "            //////////////           /////\\\\\\            /////\\\\\\        ||||||||||        ||||||||||||       " -foregroundcolor "Green"
         Write-Host "           //          //          //          \\         //          \\       ||        \\      ||                 " -foregroundcolor "Green"
@@ -78,6 +87,7 @@ Start-Transcript ".\Logs\$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
         Write-Host "            ////////////             \\\\//////             \\\\\/////         ||||||||||        ||||||||||||       " -foregroundcolor "Green"
 		Write-Host "                                                                                      Version Zcode Miner V1.2" -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
+		
 #Update stats with missing data and set to today's date/time
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 
@@ -149,7 +159,6 @@ while($true)
             if((Split-Path $Miner.URI -Leaf) -eq (Split-Path $Miner.Path -Leaf))
             {
                 New-Item (Split-Path $Miner.Path) -ItemType "Directory" | Out-Null
-                [System.Net.ServicePointManager]::SecurityProtocol = ("Tls12","Tls11","Tls")
                 Invoke-WebRequest $Miner.URI -OutFile $_.Path -UseBasicParsing
             }
             elseif(([IO.FileInfo](Split-Path $_.URI -Leaf)).Extension -eq '')
@@ -177,6 +186,20 @@ while($true)
             $Miner
         }
     }
+	
+	# Open firewall ports for all miners
+    if (Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) {
+        if ((Get-Command "Get-MpComputerStatus" -ErrorAction SilentlyContinue) -and (Get-MpComputerStatus -ErrorAction SilentlyContinue)) {
+            if (Get-Command "Get-NetFirewallRule" -ErrorAction SilentlyContinue) {
+                if ($MinerFirewalls -eq $null) {$MinerFirewalls = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program}
+                if (@($AllMiners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ "=>") {
+                   Start-Process (@{desktop = "powershell"; core = "pwsh"}.$PSEdition) ("-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1'; ('$(@($AllMiners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach {New-NetFirewallRule -DisplayName 'MultiPoolMiner' -Program `$_}" -replace '"', '\"') -Verb runAs
+                    $MinerFirewalls = $null
+                }
+            }
+        }
+    }
+
     if($Miners.Count -eq 0){"No Miners!" | Out-Host; sleep $Interval; continue}
     $Miners | ForEach {
         $Miner = $_
@@ -352,10 +375,10 @@ while($true)
     $Miners | Where {$_.Profit -ge 1E-5 -or $_.Profit -eq $null} | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
         @{Label = "Miner"; Expression={$_.Name}}, 
         @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
-        @{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}; Align='center'}, 
-        @{Label = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){  $_.ToString("N5")}else{"Benchmarking"}}}; Align='right'}, 
+        @{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Bench"}}}; Align='center'}, 
+        @{Label = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){  $_.ToString("N5")}else{"Bench"}}}; Align='right'}, 
         @{Label = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}; Align='center'},
-        @{Label = "$Currency/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){($_ * $Rates.$Currency).ToString("N3")}else{"Benchmarking"}}}; Align='center'}, 
+        @{Label = "$Currency/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){($_ * $Rates.$Currency).ToString("N3")}else{"Bench"}}}; Align='center'}, 
         @{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)"}}; Align='center'},
         @{Label = "Coins"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"  $($_.Info)"}}; Align='center'},
         @{Label = "Pool Fees"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Fees)%"}}; Align='center'},
@@ -430,7 +453,9 @@ while($true)
     [GC]::Collect()
     [GC]::WaitForPendingFinalizers()
     [GC]::Collect()
-
+	
+	Write-Host "1BTC = " $Rates.$Currency "$Currency" -foregroundcolor "Yellow"
+	
     #Do nothing for a set Interval to allow miner to run
     If ([int]$Interval -gt [int]$CheckMinerInterval) {
         Sleep ($Interval-$CheckMinerInterval)
@@ -439,7 +464,6 @@ while($true)
     }
 
      
-
     #Save current hash rates
     $ActiveMinerPrograms | ForEach {
         if($_.Process -eq $null -or $_.Process.HasExited)
