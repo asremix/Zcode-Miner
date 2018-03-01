@@ -56,6 +56,8 @@ else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 
 . .\Include.ps1
 
+$ProgramName = "Zcode Miner"
+$Version = "1.3.0"
 $DecayStart = Get-Date
 $DecayPeriod = 60 #seconds
 $DecayBase = 1-0.1 #decimal percentage
@@ -85,7 +87,7 @@ if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpC
         Write-Host "               //                  \\                     \\          //       ||        //      ||                 " -foregroundcolor "Green"  
         Write-Host "              //       //           \\        //           \\        //        ||       //       ||                 " -foregroundcolor "Green"   
         Write-Host "            ////////////             \\\\//////             \\\\\/////         ||||||||||        ||||||||||||       " -foregroundcolor "Green"
-		Write-Host "                                                                                      Version Zcode Miner V1.2" -foregroundcolor "Red"
+		Write-Host "                                                                                     "$ProgramName" Version "$Version"" -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
 		
 #Update stats with missing data and set to today's date/time
@@ -366,7 +368,7 @@ while($true)
         Write-Host "               //                  \\                     \\          //       ||        //      ||                 " -foregroundcolor "Green"  
         Write-Host "              //       //           \\        //           \\        //        ||       //       ||                 " -foregroundcolor "Green"   
         Write-Host "            ////////////             \\\\//////             \\\\\/////         ||||||||||        ||||||||||||       " -foregroundcolor "Green"
-		Write-Host "                                                                                      Version Zcode Miner V1.2" -foregroundcolor "Red"
+		Write-Host "                                                                                     "$ProgramName" Version "$Version"" -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
         Write-Host "                                                                     Keep donate 5 Minutes / Day                    " -foregroundcolor "Red"
         Write-Host ""
@@ -409,7 +411,7 @@ while($true)
             $MinerComparisons_Range = ($MinerComparisons_MarginOfError | Measure-Object -Average | Select-Object -ExpandProperty Average), (($MinerComparisons_Profit[0] - $MinerComparisons_Profit[1]) / $MinerComparisons_Profit[1]) | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
             Write-Host -BackgroundColor Yellow -ForegroundColor Black "Zcode sniffs $([Math]::Round((((($MinerComparisons_Profit[0]-$MinerComparisons_Profit[1])/$MinerComparisons_Profit[1])-$MinerComparisons_Range)*100)))% and upto $([Math]::Round((((($MinerComparisons_Profit[0]-$MinerComparisons_Profit[1])/$MinerComparisons_Profit[1])+$MinerComparisons_Range)*100)))% more profit than the fastest (listed) miner: "
         }
-		$host.ui.RawUI.WindowTitle = "Zcode Miner V1.2 - Mining " + $MinerComparisons[1] 
+		$host.ui.RawUI.WindowTitle = $ProgramName" "$Version"- Mining " + $MinerComparisons[1] 
         $MinerComparisons | Out-Host
 		 
     }
