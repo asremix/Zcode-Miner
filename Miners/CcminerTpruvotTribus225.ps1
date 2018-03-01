@@ -1,14 +1,14 @@
 . .\Include.ps1
 
-$Path = '.\Bin\NVIDIA-TPruvot2.2.5\ccminer-x64.exe'
-$Uri = 'https://github.com/MSFTserver/ccminer/releases/download/2.2.5-rvn/ccminer-x64-2.2.5-rvn-cuda9.7z'
+$Path = '.\Bin\NVIDIA-TPruvot2.2.5TR\ccminer.exe'
+#$Uri = 'https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x86-2.2.4-cuda9.7z'
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Algorithms = [PSCustomObject]@{
     Lyra2z = 'lyra2z'
     #Equihash = 'equihash' #not supported
-    Cryptonight = 'cryptonight'
+    #Cryptonight = 'cryptonight'
     #Ethash = 'ethash' #not supported
     #Sia = 'sia'
     #Yescrypt = 'yescrypt'
@@ -20,27 +20,27 @@ $Algorithms = [PSCustomObject]@{
     #X11 = 'x11'
     #MyriadGroestl = 'myr-gr'
     #Groestl = 'groestl'
-    #Keccak = 'keccak'
+    Keccakc = 'keccakc'
     #Scrypt = 'scrypt'
     #Bitcore = 'bitcore'
     #Blake2s = 'blake2s'
     #Sib = 'sib'
     #X17 = 'x17'
     #Quark = 'quark'
-    Hmq1725 = 'hmq1725'
+    #Hmq1725 = 'hmq1725'
     #Veltor = 'veltor'
     #X11evo = 'x11evo'
-    Timetravel = 'timetravel'
+    #Timetravel = 'timetravel'
     #Blakecoin = 'blakecoin'
     #Lbry = 'lbry'
-    Jha = 'jha'
-    #Skunk = 'skunk'
-    #Tribus = 'tribus'
-    #Phi = 'phi'
+    #Jha = 'jha'
+    Skunk = 'skunk'
+    Tribus = 'tribus'
+    Phi = 'phi'
     #Hsr = 'hsr'
     #Polytimos = 'polytimos'
-    Decred = 'decred'
-    X16r = 'x16r'
+    #Decred = 'decred'
+    #X16r = 'x16r'
 }
 
 $Optimizations = [PSCustomObject]@{
@@ -58,7 +58,7 @@ $Optimizations = [PSCustomObject]@{
     X11 = ''
     MyriadGroestl = ''
     Groestl = ''
-    Keccak = ' --api-remote --api-allow=0/0'
+    Keccak = ' -i 18,16,16,16,16 --api-remote --api-allow=0/0'
     Scrypt = ''
     Bitcore = ' --api-remote --api-allow=0/0'
     Blake2s = ''

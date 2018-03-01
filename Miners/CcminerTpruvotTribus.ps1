@@ -1,12 +1,12 @@
 . .\Include.ps1
 
-$Path = '.\Bin\NVIDIA-TPruvot2.2.5\ccminer.exe'
+$Path = '.\Bin\NVIDIA-TPruvot2.2.4\ccminer.exe'
 $Uri = 'https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x86-2.2.4-cuda9.7z'
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Algorithms = [PSCustomObject]@{
-    #Lyra2z = 'lyra2z'
+    Lyra2z = 'lyra2z'
     #Equihash = 'equihash' #not supported
     #Cryptonight = 'cryptonight'
     #Ethash = 'ethash' #not supported
@@ -20,7 +20,7 @@ $Algorithms = [PSCustomObject]@{
     #X11 = 'x11'
     #MyriadGroestl = 'myr-gr'
     #Groestl = 'groestl'
-    #Keccak = 'keccak'
+    Keccakc = 'keccakc'
     #Scrypt = 'scrypt'
     #Bitcore = 'bitcore'
     #Blake2s = 'blake2s'
@@ -44,7 +44,7 @@ $Algorithms = [PSCustomObject]@{
 }
 
 $Optimizations = [PSCustomObject]@{
-    Lyra2z = ' --api-remote --api-allow=0/0 --submit-stale'
+    Lyra2z = ' -i 18,16,16,16,16 --api-remote --api-allow=0/0 --submit-stale'
     Equihash = ''
     Cryptonight = ' -i 10 --api-remote --api-allow=0/0'
     Ethash = ''
@@ -58,7 +58,7 @@ $Optimizations = [PSCustomObject]@{
     X11 = ''
     MyriadGroestl = ''
     Groestl = ''
-    Keccak = ' --api-remote --api-allow=0/0'
+    Keccak = ' -i 18,16,16,16,16 --api-remote --api-allow=0/0'
     Scrypt = ''
     Bitcore = ' --api-remote --api-allow=0/0'
     Blake2s = ''
@@ -86,7 +86,7 @@ $Algorithms | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name 
     [PSCustomObject]@{
         Type = 'NVIDIA'
         Path = $Path
-        Arguments = -Join ('-a ', $Algorithms.$_, ' -o stratum+tcp://$($Pools.', $_, '.Host):$($Pools.', $_, '.Port) -u $($Pools.', $_, '.User) -p $($Pools.', $_, '.Pass)', $Optimizations.$_)
+        Arguments = -Join ('-a ', $Algorithms.$_, ' -o stratum+tcp://$($Pools.', $_, '.Host):$($Pools.', $_, '.Port) -u $($Pools.', $_, '.User) -p $($Pools.', $_, '.Pass),stat', $Optimizations.$_)
         HashRates = [PSCustomObject]@{$_ = -Join ('$($Stats.', $Name, '_', $_, '_HashRate.Day)')}
         API = 'Ccminer'
         Port = 4068
