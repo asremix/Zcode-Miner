@@ -44,7 +44,7 @@ $Algorithms = [PSCustomObject]@{
 }
 
 $Optimizations = [PSCustomObject]@{
-    Lyra2z = ' -i 18,16,16,16,16 --api-remote --api-allow=0/0 --submit-stale'
+    Lyra2z = ' -i 20 --api-remote --api-allow=0/0 --submit-stale'
     Equihash = ''
     Cryptonight = ' -i 10 --api-remote --api-allow=0/0'
     Ethash = ''
@@ -58,7 +58,7 @@ $Optimizations = [PSCustomObject]@{
     X11 = ''
     MyriadGroestl = ''
     Groestl = ''
-    Keccak = ' -i 18,16,16,16,16 --api-remote --api-allow=0/0'
+    Keccakc = ' -i 21 --api-remote --api-allow=0/0'
     Scrypt = ''
     Bitcore = ' --api-remote --api-allow=0/0'
     Blake2s = ''
@@ -86,7 +86,7 @@ $Algorithms | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name 
     [PSCustomObject]@{
         Type = 'NVIDIA'
         Path = $Path
-        Arguments = -Join ('-a ', $Algorithms.$_, ' -o stratum+tcp://$($Pools.', $_, '.Host):$($Pools.', $_, '.Port) -u $($Pools.', $_, '.User).ZcodeMiner -p $($Pools.', $_, '.Pass),stat', $Optimizations.$_)
+        Arguments = -Join ('-a ', $Algorithms.$_, ' -o stratum+tcp://$($Pools.', $_, '.Host):$($Pools.', $_, '.Port) -u $($Pools.', $_, '.User) -p $($Pools.', $_, '.Pass)', $Optimizations.$_)
         HashRates = [PSCustomObject]@{$_ = -Join ('$($Stats.', $Name, '_', $_, '_HashRate.Day)')}
         API = 'Ccminer'
         Port = 4068

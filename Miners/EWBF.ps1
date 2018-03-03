@@ -38,8 +38,8 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "--api --server $($Pools.(Get-Algorithm($_)).Host) --port $($Pools.(Get-Algorithm($_)).Port) --fee 0 --solver 0 --eexit 1 --user $($Pools.(Get-Algorithm($_)).User) --pass $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
+        Arguments = "--api --server $($Pools.', $_, '.Host) --port $($Pools.', $_, '.Port) --fee 0 --solver 0 --eexit 1 --user $($Pools.', $_, '.User) --pass $($Pools.', $_, '.Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{', $_, ' = $Stats."$($Name)_$', $_, '_HashRate".Day}
         API = "EWBF"
         Port = 42000
         Wrap = $false

@@ -34,7 +34,7 @@ $Commands = [PSCustomObject]@{
     #"quark" = "" #Quark
     #"skunk" = "" #skunk
     #"c11" = "" #C11
-    "xevan" = " -i 20,18,18,18,18 --api-remote" #Xevan
+    "xevan" = " -i 20 --api-remote" #Xevan
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -43,8 +43,8 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User).ZcodeMiner -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
+        Arguments = "-a $_ -o stratum+tcp://$($Pools.', $_, '.Host):$($Pools.', $_, '.Port) -u $($Pools.', $_, '.User) -p $($Pools.', $_, '.Pass)$($Commands.$_)"
+		HashRates = [PSCustomObject]@{', $_, ' = $Stats."$($Name)_$', $_, '_HashRate".Day}
         API = "Ccminer"
         Port = 4068
         Wrap = $false
