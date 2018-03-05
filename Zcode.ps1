@@ -66,13 +66,6 @@ $ActiveMinerPrograms = @()
 
 #Start the log
 Start-Transcript ".\Logs\$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-#Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
-(Get-Process -Id $PID).PriorityClass = "BelowNormal"
-
-if (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) {Get-ChildItem . -Recurse | Unblock-File}
-if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpComputerStatus -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {
-    Start-Process (@{desktop = "powershell"; core = "pwsh"}.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
-}
 
         Write-Host ""
         Write-Host "            //////////////           /////\\\\\\            /////\\\\\\        ||||||||||        ||||||||||||       " -foregroundcolor "Green"
@@ -90,6 +83,7 @@ if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpC
 		Write-Host "                                                                                     "$ProgramName" Version "$Version -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
 		
+
 #Update stats with missing data and set to today's date/time
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 
@@ -188,20 +182,6 @@ while($true)
             $Miner
         }
     }
-	
-	# Open firewall ports for all miners
-    if (Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) {
-        if ((Get-Command "Get-MpComputerStatus" -ErrorAction SilentlyContinue) -and (Get-MpComputerStatus -ErrorAction SilentlyContinue)) {
-            if (Get-Command "Get-NetFirewallRule" -ErrorAction SilentlyContinue) {
-                if ($MinerFirewalls -eq $null) {$MinerFirewalls = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program}
-                if (@($AllMiners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ "=>") {
-                   Start-Process (@{desktop = "powershell"; core = "pwsh"}.$PSEdition) ("-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1'; ('$(@($AllMiners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach {New-NetFirewallRule -DisplayName 'MultiPoolMiner' -Program `$_}" -replace '"', '\"') -Verb runAs
-                    $MinerFirewalls = $null
-                }
-            }
-        }
-    }
-
     if($Miners.Count -eq 0){"No Miners!" | Out-Host; sleep $Interval; continue}
     $Miners | ForEach {
         $Miner = $_
@@ -399,7 +379,6 @@ while($true)
 
         $MinerComparisons_Profit = $BestMiners_Combo_Stat.Day, ($BestMiners_Combo_Comparison | Measure-Object Profit_Comparison -Sum).Sum
 
-		
         $MinerComparisons_MarginOfError = $BestMiners_Combo_Stat.Day_Fluctuation, ($BestMiners_Combo_Comparison | ForEach-Object {$_.Profit_MarginOfError * (& {if ($MinerComparisons_Profit[1]) {$_.Profit_Comparison / $MinerComparisons_Profit[1]}else {1}})} | Measure-Object -Sum).Sum
 
         $Currency | ForEach-Object {
@@ -466,6 +445,7 @@ while($true)
     }
 
      
+	 
     #Save current hash rates
     $ActiveMinerPrograms | ForEach {
         if($_.Process -eq $null -or $_.Process.HasExited)
