@@ -19,7 +19,7 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
      return 
  } 
   
-$Location = 'US'
+$Location = 'Europe', 'US'
 $phiphipool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select -ExpandProperty Name | foreach {
 #$phiphipool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object {$phiphipool_Request.$_.hashrate -gt 0} | foreach {
     $phiphipool_Host = "pool1.phi-phi-pool.com"
@@ -69,7 +69,7 @@ $phiphipool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
             Host = $phiphipool_Host
             Port = $phiphipool_Port
             User = "$Wallet.$RigName"
-            Pass = "stats,c=$Passwordcurrency"
+            Pass = "c=$Passwordcurrency"
             Location = $Location
             SSL = $false
         }
