@@ -12,9 +12,9 @@
     [Parameter(Mandatory=$false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory=$false)]
-    [Int]$Interval = 90, #seconds before reading hash rate from miners
+    [Int]$Interval = 60, #seconds before reading hash rate from miners
     [Parameter(Mandatory=$false)] 
-    [Int]$StatsInterval = $null, #seconds of current active to gather hashrate if not gathered yet 
+    [Int]$StatsInterval = $240, #seconds of current active to gather hashrate if not gathered yet 
     [Parameter(Mandatory=$false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory=$false)]
@@ -45,19 +45,21 @@
     [Int]$Delay = 1 #seconds before opening each miner
 )
 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+$CurrentProduct = "Zcode Miner"
+$CurrentVersion = "1.3.4"
+
+# Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
+ [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
+Write-host "INFO: Adding Zcode Miner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
 Get-ChildItem . -Recurse | Unblock-File
 try{if((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)){Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch{}
-
-if($Proxy -eq ""){$PSDefaultParameterValues.Remove("*:Proxy")}
+ if($Proxy -eq ""){$PSDefaultParameterValues.Remove("*:Proxy")}
 else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 
 . .\Include.ps1
 
-$ProgramName = "Zcode Miner"
-$Version = "1.3.0"
 $DecayStart = Get-Date
 $DecayPeriod = 60 #seconds
 $DecayBase = 1-0.1 #decimal percentage
@@ -80,7 +82,7 @@ Start-Transcript ".\Logs\$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
         Write-Host "               //                  \\                     \\          //       ||        //      ||                 " -foregroundcolor "Green"  
         Write-Host "              //       //           \\        //           \\        //        ||       //       ||                 " -foregroundcolor "Green"   
         Write-Host "            ////////////             \\\\//////             \\\\\/////         ||||||||||        ||||||||||||       " -foregroundcolor "Green"
-		Write-Host "                                                                                     "$ProgramName" Version "$Version -foregroundcolor "Red"
+		Write-Host "                                                                                     "$CurrentProduct" Version "$CurrentVersion -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
 		
 
@@ -328,14 +330,6 @@ while($true)
     
     #Display mining information
     Clear-Host
-    #Display active miners list
-    $ActiveMinerPrograms | Sort -Descending Status,{if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1+6+6) | Format-Table -Wrap -GroupBy Status (
-        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-        @{Label = "Active"; Expression={"{0:dd} Days {0:hh} Hours {0:mm} Minutes" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.HasExited){($_.Active)}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-        @{Label = "Launched"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_ Times"}}}}, 
-        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-    ) | Out-Host
-        Write-Host ""
         Write-Host "            //////////////           /////\\\\\\            /////\\\\\\        ||||||||||        ||||||||||||       " -foregroundcolor "Green"
         Write-Host "           //          //          //          \\         //          \\       ||        \\      ||                 " -foregroundcolor "Green"
         Write-Host "                      //          //                     //            \\      ||         \\     ||                 " -foregroundcolor "Green"
@@ -348,12 +342,10 @@ while($true)
         Write-Host "               //                  \\                     \\          //       ||        //      ||                 " -foregroundcolor "Green"  
         Write-Host "              //       //           \\        //           \\        //        ||       //       ||                 " -foregroundcolor "Green"   
         Write-Host "            ////////////             \\\\//////             \\\\\/////         ||||||||||        ||||||||||||       " -foregroundcolor "Green"
-		Write-Host "                                                                                     "$ProgramName" Version "$Version -foregroundcolor "Red"
+		Write-Host "                                                                                     "$CurrentProduct" Version "$CurrentVersion -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
         Write-Host "                                                                     Keep donate 5 Minutes / Day                    " -foregroundcolor "Red"
-        Write-Host ""
-        Write-Host ""
-     Write-Host "1BTC = " $Rates.$Currency "$Currency" -foregroundcolor "Yellow"
+		Write-Host "1BTC = " $Rates.$Currency "$Currency" -foregroundcolor "Yellow"
     $Miners | Where {$_.Profit -ge 1E-5 -or $_.Profit -eq $null} | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
         @{Label = "Miner"; Expression={$_.Name}}, 
         @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
@@ -364,10 +356,16 @@ while($true)
         @{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)"}}; Align='center'},
         @{Label = "Coins"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"  $($_.Info)"}}; Align='center'},
         @{Label = "Pool Fees"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Fees)%"}}; Align='center'},
-        @{Label = "# of Workers"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Workers)"}}; Align='center'}
+        @{Label = "Pool Workers"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Workers)"}}; Align='center'}
         
     ) | Out-Host
-    
+    #Display active miners list
+    $ActiveMinerPrograms | Sort -Descending Status,{if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1+6+6) | Format-Table -Wrap -GroupBy Status (
+        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+        @{Label = "Active"; Expression={"{0:dd} Days {0:hh} Hours {0:mm} Minutes" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.HasExited){($_.Active)}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+        @{Label = "Launched"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_ Times"}}}}, 
+        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+    ) | Out-Host    
 	
     #Display profit comparison
     if (($BestMiners_Combo | Where-Object Profit -EQ $null | Measure-Object).Count -eq 0) {
@@ -390,7 +388,7 @@ while($true)
             $MinerComparisons_Range = ($MinerComparisons_MarginOfError | Measure-Object -Average | Select-Object -ExpandProperty Average), (($MinerComparisons_Profit[0] - $MinerComparisons_Profit[1]) / $MinerComparisons_Profit[1]) | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
             Write-Host -BackgroundColor Yellow -ForegroundColor Black "Zcode sniffs $([Math]::Round((((($MinerComparisons_Profit[0]-$MinerComparisons_Profit[1])/$MinerComparisons_Profit[1])-$MinerComparisons_Range)*100)))% and upto $([Math]::Round((((($MinerComparisons_Profit[0]-$MinerComparisons_Profit[1])/$MinerComparisons_Profit[1])+$MinerComparisons_Range)*100)))% more profit than the fastest (listed) miner: "
         }
-		$host.ui.RawUI.WindowTitle = $ProgramName + " " + $Version + " Mining " + $MinerComparisons[1] 
+		$host.ui.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion + " Mining " + $MinerComparisons[1] 
         $MinerComparisons | Out-Host
 		 
     }
@@ -476,7 +474,8 @@ while($true)
 
                 $_.New = $false
                 $_.Hashrate_Gathered = $true 
-                Write-Host "Zcode Miner minning "$_.Algorithms" then saves hashrate" -foregroundcolor "Yellow"
+				Write-Host "Stats '"$_.Algorithms"' -> "($Miner_HashRates | ConvertTo-Hash)"after"$WasActive" sec" -foregroundcolor "Yellow"
+                Write-Host "--------------------------------------------------------------------------------" -foregroundcolor "Yellow"
             }
         }
 	}
