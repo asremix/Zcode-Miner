@@ -35,14 +35,14 @@ $Algorithms = [PSCustomObject]@{
 }
 
 $Optimizations = [PSCustomObject]@{
-    Lyra2z = ' -i 18,16,16,16,16 '
+    Lyra2z = ' '
     Equihash = ''
     Cryptonight = ''
     Ethash = ''
     Sia = ''
     Yescrypt = ''
     BlakeVanilla = ''
-    Lyra2RE2 = ' --api-remote'
+    Lyra2RE2 = ' -i 20,18,18,18,18 --api-remote'
     Skein = ' -i 28 --api-remote'
     Qubit = ''
     NeoScrypt = ' -i 15 --api-remote'
@@ -54,7 +54,7 @@ $Optimizations = [PSCustomObject]@{
     Bitcore = ''
     Blake2s = ' --api-remote'
     Sib = ' -i 21 --api-remote'
-    X17 = ' -i 21 --api-remote'
+    #X17 = ' -i 21 --api-remote'
     Quark = ''
     Hmq1725 = ''
     Veltor = ' --api-remote'
