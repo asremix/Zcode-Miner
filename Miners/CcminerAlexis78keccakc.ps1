@@ -10,7 +10,7 @@ $Algorithms = [PSCustomObject]@{
 }
 $Optimizations = [PSCustomObject]@{
 
-		keccakc = ' --api-remote' #Keccakc
+		keccakc = '  -i 21 --api-remote' #Keccakc
 
 }
 
