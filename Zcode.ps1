@@ -42,11 +42,18 @@
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
-    [Int]$Delay = 1 #seconds before opening each miner
+    [Int]$Delay = 1, #seconds before opening each miner
+	[Parameter(Mandatory = $false)]
+    [Alias("Uri", "Url")]
+    [String]$MinerStatusUrl = "http://localhost:88/api/web/miner.php", #i.e https://multipoolminer.io/monitor/miner.php
+    [Parameter(Mandatory = $false)]
+    [String]$MinerStatusKey = ""
 )
 
 $CurrentProduct = "Zcode Miner"
-$CurrentVersion = "1.3.4"
+$CurrentVersion = "1.3.5"
+# Set TitleBar
+$host.ui.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion
 
 # Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
  [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
@@ -327,7 +334,10 @@ while($true)
             }
         }
     }
-    
+	
+	#Teat Api ReportStatus
+	#if ($MinerStatusURL -and $MinerStatusKey) {& .\ReportStatus.ps1 -Key $MinerStatusKey -WorkerName $WorkerName -ActiveMiners $_.Active -Miners $Miners -MinerStatusURL $MinerStatusURL}
+ 
     #Display mining information
     Clear-Host
         Write-Host "            //////////////           /////\\\\\\            /////\\\\\\        ||||||||||        ||||||||||||       " -foregroundcolor "Green"
