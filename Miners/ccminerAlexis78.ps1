@@ -20,11 +20,11 @@ $Optimizations = [PSCustomObject]@{
     Veltor = ' -i 20 --api-remote' #Veltor
     Keccak = ' -m 2 -i 21 ' #Keccak
     Lbry = ' --api-remote' #Lbry
-    Lyra2RE2 = ' --api-remote' #Lyra2RE2
-    Nist5 = ' --api-remote' #Nist5
+    Lyra2RE2 = ' -i 22 --api-remote' #Lyra2RE2
+    Nist5 = ' -i 18 --api-remote' #Nist5
     Sib = ' -i 21 --api-remote' #Sib
     Skein = ' --api-remote' #Skein
-    C11 = ' -i 21 --api-remote' #C11
+    C11 = ' -i 18 --api-remote' #C11
     X17 = ' -i 20 --api-remote' #X17
 }
 

@@ -62,7 +62,7 @@ $Optimizations = [PSCustomObject]@{
     Timetravel = ' -i 25 --api-remote'
     Blakecoin = ' --api-remote'
     Lbry = ' -i 28 --api-remote'
-    C11 = ' -i 20 --api-remote'
+    C11 = ' -i 18 --api-remote'
     Nist5 = ' -i 20 --api-remote'
 }
 
