@@ -51,7 +51,7 @@
 )
 
 $CurrentProduct = "Zcode Miner"
-$CurrentVersion = "1.3.5"
+$CurrentVersion = "1.3.6"
 
 #Get Time
 $thisTime = Get-Date -UFormat %T
