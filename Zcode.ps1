@@ -53,8 +53,7 @@
 $CurrentProduct = "Zcode Miner"
 $CurrentVersion = "1.3.6"
 
-#Get Time
-$thisTime = Get-Date -UFormat %T
+
 # Set TitleBar
 $host.ui.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion
 
@@ -358,8 +357,9 @@ while($true)
 		Write-Host "                                                                                     "$CurrentProduct" Version "$CurrentVersion -foregroundcolor "Red"
         Write-Host "                                                                     Thank you Everyone For using Zcode Miner!!!!!  " -foregroundcolor "Yellow"	
         Write-Host "                                                                     Keep donate 5 Minutes / Day                    " -foregroundcolor "Red"
-		Write-Host "1BTC = " $Rates.$Currency "$Currency" " Last Update " $thisTime -foregroundcolor "Yellow"
+		Write-Host "1BTC = " $Rates.$Currency "$Currency"-foregroundcolor "Yellow"
     $Miners | Where {$_.Profit -ge 1E-5 -or $_.Profit -eq $null} | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
+		
         @{Label = "Miner"; Expression={$_.Name}}, 
         @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
         @{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Bench"}}}; Align='center'}, 
@@ -374,7 +374,7 @@ while($true)
     ) | Out-Host
     #Display active miners list
     $ActiveMinerPrograms | Sort -Descending Status,{if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1+6+6) | Format-Table -Wrap -GroupBy Status (
-		@{Label = "Start Time"; Expression={$thisTime}; Align='Left'},
+		@{Label = "Start Time"; Expression={$_.Process.StartTime}; Align='Left'},
         @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
         @{Label = "Active"; Expression={"{0:dd} Days {0:hh} Hours {0:mm} Minutes" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.HasExited){($_.Active)}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
         @{Label = "Launched"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_ Times"}}}}, 
